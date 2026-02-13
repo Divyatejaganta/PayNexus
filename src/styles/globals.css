@@ -1,0 +1,31 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap');
+
+:root {
+  --bg-1: #06060f;
+  --bg-2: #0c0c1d;
+  --neon: #00e6b8;
+  --neon-purple: #7b5cff;
+  --neon-pink: #ff6b9d;
+}
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+html, body, #__next {
+  height: 100%;
+}
+
+body {
+  @apply bg-[var(--bg-1)] text-white font-inter;
+}
+
+.glass {
+  background: rgba(255,255,255,0.03);
+  backdrop-filter: blur(8px) saturate(120%);
+  border: 1px solid rgba(255,255,255,0.04);
+}
+
+.neon-border {
+  box-shadow: 0 0 12px rgba(0,230,184,0.06), inset 0 0 1px rgba(123,92,255,0.06);
+}

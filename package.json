@@ -1,0 +1,32 @@
+{
+  "name": "paynexus",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "prisma:generate": "prisma generate",
+    "seed": "ts-node --transpile-only prisma/seed.ts"
+  },
+  "dependencies": {
+    "next": "14.0.0",
+    "react": "18.2.0",
+    "react-dom": "18.2.0",
+    "@prisma/client": "5.10.1",
+    "prisma": "5.10.1",
+    "next-auth": "4.22.1",
+    "zustand": "4.5.11",
+    "lucide-react": "0.278.0",
+    "framer-motion": "10.12.13",
+    "recharts": "2.7.2",
+    "qrcode.react": "1.0.0"
+  },
+  "devDependencies": {
+    "typescript": "5.4.2",
+    "tailwindcss": "4.3.1",
+    "postcss": "8.4.31",
+    "autoprefixer": "10.4.14",
+    "ts-node": "10.9.1"
+  }
+}

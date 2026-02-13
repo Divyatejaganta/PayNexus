@@ -1,0 +1,53 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(cuid())
+  name      String?
+  email     String   @unique
+  role      String   @default("customer")
+  wallet    Wallet?
+  createdAt DateTime @default(now())
+  transactions Transaction[] @relation("tx_from_user")
+}
+
+model Merchant {
+  id        String   @id @default(cuid())
+  name      String
+  email     String   @unique
+  wallet    Wallet?
+  createdAt DateTime @default(now())
+  transactions Transaction[] @relation("tx_to_merchant")
+}
+
+model Wallet {
+  id         String  @id @default(cuid())
+  balance    Float   @default(0)
+  ownerId    String
+  ownerType  String
+  createdAt  DateTime @default(now())
+}
+
+model Transaction {
+  id          String   @id @default(cuid())
+  fromUserId  String
+  toMerchantId String
+  amount      Float
+  status      String   @default("PENDING")
+  createdAt   DateTime @default(now())
+  flagged     Boolean  @default(false)
+}
+
+model Settlement {
+  id          String   @id @default(cuid())
+  merchantId  String
+  amount      Float
+  settled     Boolean  @default(false)
+  createdAt   DateTime @default(now())
+}
