@@ -10,3 +10,12 @@ resources: {}
 nodeSelector: {}
 tolerations: []
 affinity: {}
+ingress:
+  enabled: false
+  host: paynexus.example
+  className: ""
+rbac:
+  create: true
+secrets:
+  jwt_key: "REPLACE_ME"
+

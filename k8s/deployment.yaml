@@ -1,0 +1,21 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: paynexus
+  labels:
+    app: paynexus
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: paynexus
+  template:
+    metadata:
+      labels:
+        app: paynexus
+    spec:
+      containers:
+        - name: paynexus
+          image: paynexus/api:latest
+          ports:
+            - containerPort: 80
