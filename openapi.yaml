@@ -1,0 +1,186 @@
+openapi: 3.0.3
+info:
+  title: PayNexus API
+  version: 1.0.0
+servers:
+  - url: https://api.paynexus.example
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+  schemas:
+    QRPaymentRequest:
+      type: object
+      properties:
+        merchant_id:
+          type: string
+          format: uuid
+        amount:
+          type: integer
+          minimum: 0
+        currency:
+          type: string
+        qr_payload:
+          type: string
+        metadata:
+          type: object
+      required: [merchant_id, amount, currency]
+    CardPaymentRequest:
+      type: object
+      properties:
+        merchant_id:
+          type: string
+          format: uuid
+        amount:
+          type: integer
+        currency:
+          type: string
+        card:
+          type: object
+          properties:
+            pan:
+              type: string
+            expiry:
+              type: string
+            cvv:
+              type: string
+        billing:
+          type: object
+      required: [merchant_id, amount, currency, card]
+    TransactionResponse:
+      type: object
+      properties:
+        transaction_id:
+          type: string
+        status:
+          type: string
+        message:
+          type: string
+    RefundRequest:
+      type: object
+      properties:
+        transaction_id:
+          type: string
+        amount:
+          type: integer
+        reason:
+          type: string
+      required: [transaction_id, amount]
+    SettlementList:
+      type: object
+      properties:
+        settlements:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: string
+              amount:
+                type: integer
+              status:
+                type: string
+paths:
+  /payments/qr-pay:
+    post:
+      summary: Initiate QR payment
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: header
+          name: Idempotency-Key
+          schema:
+            type: string
+          required: true
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/QRPaymentRequest'
+      responses:
+        '202':
+          description: Accepted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TransactionResponse'
+        '400':
+          description: Bad Request
+  /payments/card:
+    post:
+      summary: Charge a card
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: header
+          name: Idempotency-Key
+          schema:
+            type: string
+          required: true
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CardPaymentRequest'
+      responses:
+        '200':
+          description: Completed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TransactionResponse'
+        '402':
+          description: Payment Failed
+  /transactions/{id}:
+    get:
+      summary: Get transaction by id
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Transaction
+  /refund:
+    post:
+      summary: Create refund
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: header
+          name: Idempotency-Key
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RefundRequest'
+      responses:
+        '202':
+          description: Refund accepted
+  /merchant/settlements:
+    get:
+      summary: List merchant settlements
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: query
+          name: merchant_id
+          schema:
+            type: string
+      responses:
+        '200':
+          description: settlements
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SettlementList'

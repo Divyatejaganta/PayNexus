@@ -1,0 +1,26 @@
+sequenceDiagram
+  participant Client
+  participant API as API Gateway
+  participant ORC as Orchestrator
+  participant LED as Ledger Service
+  participant GATE as Payment Gateway
+  participant DLQ as DeadLetterQueue
+  participant NOT as Notification Service
+
+  Client->>API: POST /payments (Idempotency-Key)
+  API->>ORC: forward request
+  ORC->>LED: insert ledger (PENDING)
+  ORC->>GATE: call gateway
+  alt gateway timeout / error
+    ORC->>ORC: retry with backoff (3 tries)
+    alt still failing
+      ORC->>DLQ: enqueue for manual retry
+      ORC->>LED: mark ledger ERROR
+      ORC->>NOT: send failure notification async
+      ORC-->>API: 502 / 503
+    end
+  else success
+    GATE-->>ORC: success
+    ORC->>LED: finalize ledger
+    ORC->>NOT: notify async
+  end

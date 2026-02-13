@@ -1,0 +1,34 @@
+sequenceDiagram
+  participant Client
+  participant API as API Gateway
+  participant ORC as Orchestrator
+  participant RED as Redis (Idempotency)
+  participant LED as Ledger Service
+  participant FRAUD as Fraud Engine
+  participant GATE as Card Gateway
+  participant KAF as Kafka
+  participant NOT as Notification Service
+
+  Client->>API: POST /payments/card (Idempotency-Key)
+  API->>ORC: forward request
+  ORC->>RED: GET idempotency-key
+  alt key exists
+    RED-->>ORC: transaction id
+    ORC-->>API: return stored response
+  else
+    ORC->>LED: INSERT ledger entry (PENDING)
+    ORC->>FRAUD: sync check
+    FRAUD-->>ORC: CHALLENGE/ALLOW
+    alt ALLOW
+      ORC->>GATE: authorize & capture
+      GATE-->>ORC: success
+      ORC->>LED: finalize ledger (COMMIT)
+      ORC->>KAF: emit payments.events
+      ORC->>RED: STORE idempotency-key
+      ORC-->>API: 200 (COMPLETED)
+      KAF-->>NOT: async notify
+    else BLOCK
+      ORC->>LED: mark ledger FAILED
+      ORC-->>API: 402/422 (blocked)
+    end
+  end

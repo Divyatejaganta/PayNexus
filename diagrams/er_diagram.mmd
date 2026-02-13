@@ -1,0 +1,63 @@
+erDiagram
+    USER {
+        UUID id PK
+        TEXT email
+    }
+    MERCHANT {
+        UUID id PK
+        TEXT name
+        UUID owner_user_id FK
+    }
+    TRANSACTION {
+        UUID id PK
+        UUID merchant_id FK
+        BIGINT amount
+        TEXT currency
+        TEXT status
+        TEXT idempotency_key
+    }
+    LEDGERENTRY {
+        BIGINT id PK
+        UUID transaction_id FK
+        UUID account_id
+        BIGINT delta
+        BIGINT balance_after
+    }
+    WALLET {
+        UUID id PK
+        UUID merchant_id FK
+        BIGINT balance
+    }
+    SETTLEMENT {
+        UUID id PK
+        UUID merchant_id FK
+        BIGINT amount
+        TEXT status
+    }
+    BANKACCOUNT {
+        UUID id PK
+        UUID merchant_id FK
+        TEXT bank_code
+        TEXT account_number
+    }
+    FRAUDLOG {
+        UUID id PK
+        UUID transaction_id FK
+        TEXT reason
+        JSONB details
+    }
+    NOTIFICATION {
+        UUID id PK
+        UUID related_id
+        TEXT type
+        TEXT status
+    }
+
+    USER ||--o{ MERCHANT : owns
+    MERCHANT ||--o{ TRANSACTION : processes
+    TRANSACTION ||--o{ LEDGERENTRY : creates
+    MERCHANT ||--o{ WALLET : has
+    MERCHANT ||--o{ SETTLEMENT : receives
+    MERCHANT ||--o{ BANKACCOUNT : configures
+    TRANSACTION ||--o{ FRAUDLOG : logs
+    TRANSACTION ||--o{ NOTIFICATION : triggers

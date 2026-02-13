@@ -1,0 +1,25 @@
+sequenceDiagram
+  participant Client
+  participant API as API Gateway
+  participant ORC as Orchestrator
+  participant RED as Redis
+  participant LED as Ledger Service
+  participant GATE as Payment Gateway
+  participant KAF as Kafka
+  participant NOT as Notification Service
+
+  Client->>API: POST /refund (Idempotency-Key)
+  API->>ORC: forward request
+  ORC->>RED: check idempotency-key
+  alt exists
+    ORC-->>API: return stored refund response
+  else
+    ORC->>LED: create refund ledger entry (PENDING)
+    ORC->>GATE: call gateway refund
+    GATE-->>ORC: success
+    ORC->>LED: finalize refund ledger
+    ORC->>KAF: emit refund.events
+    ORC->>RED: store idempotency mapping
+    ORC-->>API: 202 (refund_id)
+    KAF-->>NOT: async notify
+  end

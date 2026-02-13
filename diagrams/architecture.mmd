@@ -1,0 +1,28 @@
+graph LR
+  subgraph Public
+    ALB["API Gateway (ALB)"]
+  end
+  subgraph K8s["Kubernetes Cluster"]
+    ORC["Payment Orchestrator"]
+    QR["QR Service"]
+    LED["Ledger Service (Postgres)"]
+    FRAUD["Fraud Engine"]
+    SETT["Settlement Engine"]
+    NOTIF["Notification Service"]
+    WORK["Workers / Consumers"]
+  end
+  S3[(Object Store)]
+  Kafka[(Kafka Cluster)]
+  Redis[(Redis Cluster)]
+  Postgres[(Postgres HA)]
+
+  ALB --> ORC
+  ORC --> LED
+  ORC --> FRAUD
+  ORC --> Kafka
+  Kafka --> WORK
+  WORK --> NOTIF
+  SETT --> Postgres
+  LED --> Postgres
+  ORC --> Redis
+  NOTIF --> S3

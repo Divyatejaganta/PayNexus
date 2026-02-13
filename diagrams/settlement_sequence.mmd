@@ -1,0 +1,18 @@
+sequenceDiagram
+  participant Scheduler
+  participant SET as Settlement Engine
+  participant LED as Ledger Service
+  participant KAF as Kafka
+  participant BANK as Bank Adapter
+  participant RECON as Reconciliation Worker
+
+  Scheduler->>SET: scheduled run (daily/nightly)
+  SET->>LED: query settled transactions not yet in settlement
+  SET->>BANK: initiate transfers (batch)
+  BANK-->>SET: accepted / partial failures
+  SET->>KAF: emit settlements.events
+  KAF-->>RECON: Reconciliation worker consumes
+  RECON->>LED: cross-check balances and mark settlement COMPLETE
+  alt partial failures
+    SET->>RECON: create retry jobs
+  end
